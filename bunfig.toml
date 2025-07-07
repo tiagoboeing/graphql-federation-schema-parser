@@ -1,0 +1,23 @@
+[build]
+entrypoints = ["src/index.ts"]
+outdir = "dist"
+minify = true
+target = "node"
+compile = true
+format = "executable"
+
+[build.linux]
+target = "linux"
+
+[build.macos]
+target = "macos"
+
+[build.windows]
+target = "windows"
+
+[install]
+optional = true
+
+[bundle]
+external = []
+assets = ["node_modules/figlet/fonts/**/*", "schemas/**/*"]

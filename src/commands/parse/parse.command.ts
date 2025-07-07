@@ -1,5 +1,5 @@
 import { mergeTypeDefs } from '@graphql-tools/merge'
-import consola from 'consola'
+import { ConsolaInstance } from 'consola'
 import { buildSchema, print, printSchema } from 'graphql'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -8,7 +8,7 @@ import { ParseCommandOptions } from './parse.model'
 
 export default async function execute(
   args: ParseCommandOptions,
-  logger: consola.ConsolaInstance
+  logger: ConsolaInstance
 ) {
   logger.start('Starting schema parsing...')
   logger.debug('Args =', args)

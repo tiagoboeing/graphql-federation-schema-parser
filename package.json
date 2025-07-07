@@ -3,20 +3,25 @@
   "version": "0.0.0",
   "description": "CLI tool to parse GraphQL schemas and generate TypeScript definitions for use in a GraphQL Federation gateway.",
   "main": "build/src/index.js",
-  "bin": "build/src/index.js",
+  "type": "module",
+  "bin": {
+    "gql-federation-schema-parser": "./dist/index.js"
+  },
   "author": {
     "name": "Tiago Boeing",
     "email": "contato@tiagoboeing.com"
   },
   "engines": {
-    "node": "22.14.0"
+    "node": ">=22.0.0",
+    "bun": ">=1.0.0"
   },
   "scripts": {
-    "start:dev": "ts-node-dev --clear --respawn src/index.ts",
+    "start:dev": "bun --watch src/index.ts",
     "prebuild": "rm -rf ./dist",
-    "build": "tsc && pkg package.json",
-    "postbuild": "rm -rf ./build",
-    "execute": "ts-node-dev src/index.ts"
+    "build": "bun build ./src/index.ts --target=node --outdir=./dist --minify",
+    "build:executable": "bun build ./src/index.ts --compile --outfile=./dist/gql-federation-schema-parser",
+    "postbuild:executable": "chmod +x ./dist/gql-federation-schema-parser",
+    "execute": "bun src/index.ts"
   },
   "keywords": [
     "graphql",
@@ -30,8 +35,7 @@
   "devDependencies": {
     "@types/figlet": "^1.7.0",
     "@types/node": "^24.0.10",
-    "pkg": "^5.8.1",
-    "ts-node-dev": "^2.0.0",
+    "bun": "^1.2.18",
     "typescript": "^5.8.3"
   },
   "dependencies": {
@@ -39,20 +43,11 @@
     "commander": "^14.0.0",
     "consola": "^3.4.2",
     "figlet": "^1.8.1",
-    "graphql": "^16.11.0",
-    "winston": "^3.17.0"
+    "graphql": "^16.11.0"
   },
-  "pkg": {
-    "scripts": "build/**/*.js",
-    "assets": [
-      "schemas/**/*",
-      "node_modules/figlet/fonts/**/*"
-    ],
-    "targets": [
-      "latest-linux-arm64",
-      "latest-macos-arm64",
-      "latest-win-x64"
-    ],
-    "outputPath": "dist"
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bun"
+    ]
   }
 }

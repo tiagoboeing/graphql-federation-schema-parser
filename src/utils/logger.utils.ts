@@ -11,12 +11,19 @@ export enum ConsolaLogLevel {
   Verbose = 999
 }
 
-export const appLogger = (logLevel = ConsolaLogLevel.Info, useColors?: boolean) =>
-  createConsola({
+// Verificar se está rodando como binário compilado
+const isPackaged = process.argv[0].includes('gql-federation-schema-parser')
+
+export function appLogger(logLevel = ConsolaLogLevel.Info, useColors?: boolean) {
+  const shouldUseColors = useColors !== undefined ? useColors : !isPackaged
+
+  return createConsola({
     level: logLevel,
-    fancy: useColors,
+
+    // fancy: isPackaged ? false : shouldUseColors,
     formatOptions: {
-      colors: useColors,
+      colors: shouldUseColors,
       columns: process.stdout.columns || 80
     }
   })
+}

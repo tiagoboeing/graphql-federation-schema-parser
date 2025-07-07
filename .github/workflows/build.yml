@@ -1,17 +1,30 @@
-name: Build
+name: Build cross-platform binaries
 on:
   workflow_dispatch:
   push:
     branches:
       - 'master'
-
-defaults:
-  run:
-    shell: bash
+    tags:
+      - 'v*'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact: gql-federation-schema-parser-linux
+          - os: macos-latest
+            platform: macos
+            artifact: gql-federation-schema-parser-macos
+          - os: windows-latest
+            platform: windows
+            artifact: gql-federation-schema-parser-win.exe
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,21 +32,95 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          standalone: true
           version: 10.4.1
-          run_install: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build binary
+        run: bun build ./src/index.ts --compile --outfile=./dist/${{ matrix.artifact }}
 
-      - name: Upload dist artifact
+      - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: |
-            dist/gql-federation-schema-parser-linux-arm64
-            dist/gql-federation-schema-parser-macos-arm64
-            gql-federation-schema-parser-win-x64.exe
+          name: ${{ matrix.artifact }}
+          path: ./dist/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  release:
+    name: Create Release and Update Changelog
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Changelogen
+        run: npm install -g changelogen
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          # Generate complete changelog for CHANGELOG.md file
+          changelogen generate --output CHANGELOG.md
+
+          # Determine previous tag to generate release notes
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # If there's no previous tag, use the same changelog for release notes
+            cp CHANGELOG.md RELEASE_NOTES.md
+          else
+            # Generate incremental changelog since the last tag for release notes
+            changelogen generate --from $PREVIOUS_TAG --to v${{ steps.get_version.outputs.VERSION }} --output RELEASE_NOTES.md
+          fi
+
+          # Add header with current version to release notes if it doesn't exist
+          if ! grep -q "# v${{ steps.get_version.outputs.VERSION }}" RELEASE_NOTES.md; then
+            sed -i "1s/^/# v${{ steps.get_version.outputs.VERSION }}\n\n/" RELEASE_NOTES.md
+          fi
+
+      - name: Commit updated CHANGELOG.md
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for release v${{ steps.get_version.outputs.VERSION }} [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./binaries
+
+      - name: Display structure of downloaded files
+        run: ls -R ./binaries
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            ./binaries/gql-federation-schema-parser-linux/gql-federation-schema-parser-linux
+            ./binaries/gql-federation-schema-parser-macos/gql-federation-schema-parser-macos
+            ./binaries/gql-federation-schema-parser-win.exe/gql-federation-schema-parser-win.exe
+          draft: false
+          prerelease: false

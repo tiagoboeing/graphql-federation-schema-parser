@@ -4,6 +4,9 @@ This project provides a CLI tool to parse GraphQL schemas and generate TypeScrip
 
 Run it on a directory containing GraphQL schema files, and it will output TypeScript definitions to publish to Schema Registry. All schema files will be parsed and merged into a single schema scoped by a provided namespace and service name.
 
+For what purpose should you use this tool?
+- Building a **GraphQL supergraph**: Use it to create a federated schema for a GraphQL gateway, allowing you to combine multiple services into a single schema and namespace them properly.
+
 ## Example usage
 
 With the following [schema files](./schemas) in a directory and these settings:
