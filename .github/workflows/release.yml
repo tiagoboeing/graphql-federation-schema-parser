@@ -1,0 +1,55 @@
+name: Update release
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            # Get the latest tag
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            echo "VERSION=${LATEST_TAG#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download artifacts from master last build
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          branch: master
+          path: ./binaries
+          check_artifacts: true
+          if_no_artifact_found: fail
+
+      - name: Display structure of downloaded files
+        run: ls -R ./binaries
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.get_version.outputs.VERSION }}
+          body_path: CHANGELOG.md
+          files: |
+            ./binaries/gql-federation-schema-parser-linux/gql-federation-schema-parser-linux
+            ./binaries/gql-federation-schema-parser-macos/gql-federation-schema-parser-macos
+            ./binaries/gql-federation-schema-parser-win.exe/gql-federation-schema-parser-win.exe
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.ref_name }}

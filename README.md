@@ -7,7 +7,7 @@ Run it on a directory containing GraphQL schema files, and it will output TypeSc
 For what purpose should you use this tool?
 - Building a **GraphQL supergraph**: Use it to create a federated schema for a GraphQL gateway, allowing you to combine multiple services into a single schema and namespace them properly.
 
-## Example usage
+## How it works
 
 With the following [schema files](./schemas) in a directory and these settings:
 
@@ -68,6 +68,21 @@ query {
     }
   }
 }
+```
+
+## Installation
+
+### MacOS
+
+On MacOS a warn will be shown when running the binary for the first time, indicating that it is from an unidentified developer. You can bypass this by following these steps:
+
+```bash
+# Download the latest release from the release page and unzip it
+...
+
+# Trust the binary and make it executable
+xattr -d com.apple.quarantine gql-federation-schema-parser-macos
+chmod +x gql-federation-schema-parser-macos
 ```
 
 ## Development

@@ -3,16 +3,19 @@ import figlet from 'figlet'
 import { version as packageVersion } from '../package.json'
 import parseCommand from './commands/parse/parse.command'
 import { appLogger, ConsolaLogLevel } from './utils/logger.utils'
+import bigFont from 'figlet/importable-fonts/Big'
 
-const program = new Command()
+figlet.parseFont('Big', bigFont)
+
 let logger = appLogger()
+const program = new Command()
 
 program
   .name('gql-federation-schema-parser')
   .description('CLI tool to parse and manipulate GraphQL schemas for federation')
   .version(packageVersion)
   .addHelpText('before', () => {
-    return figlet.textSync('GQL Schema Parser', { font: 'Standard' })
+    return figlet.textSync('GQL Schema Parser', { font: 'Big' })
   })
   .option('-D --debug', 'Enable debug mode', false)
   .option('-S --simple', 'Disable colors on terminal', false)
