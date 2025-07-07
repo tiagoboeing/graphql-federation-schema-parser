@@ -43,7 +43,6 @@ program
   )
   .requiredOption('-s --service-name <name>', 'Name of the service')
   .requiredOption('-n --namespace <namespace>', 'Namespace to scope this service')
-  .option('-v --verbose', 'Enable verbose output', false)
   .option('-w --write-to-file', 'Write the generated schema to a file', true)
   .option(
     '-o --output-file <file>',

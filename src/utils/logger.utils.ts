@@ -1,4 +1,4 @@
-import { createConsola, ConsolaReporter } from 'consola'
+import { createConsola } from 'consola'
 
 export enum ConsolaLogLevel {
   FatalAndError = 0,
@@ -9,21 +9,6 @@ export enum ConsolaLogLevel {
   Trace = 5,
   Silent = -999,
   Verbose = 999
-}
-
-const logEmojis = {
-  success: '✅ ',
-  info: 'ℹ️ ',
-  error: '❌ ',
-  warn: '⚠️ ',
-  debug: '🔍 ',
-  trace: '🔬 ',
-  fatal: '💀 ',
-  log: '📝 ',
-  ready: '🚀 ',
-  start: '🏁 ',
-  box: '📦 ',
-  verbose: '📢 '
 }
 
 export const appLogger = (logLevel = ConsolaLogLevel.Info, useColors?: boolean) =>
