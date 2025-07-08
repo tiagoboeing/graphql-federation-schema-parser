@@ -1,6 +1,6 @@
 {
   "name": "gql-federation-schema-parser",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "CLI tool to parse GraphQL schemas and generate TypeScript definitions for use in a GraphQL Federation gateway.",
   "main": "build/src/index.js",
   "type": "module",
