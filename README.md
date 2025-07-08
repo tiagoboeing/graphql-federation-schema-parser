@@ -1,5 +1,8 @@
 # GraphQL Federation Schema Parser
 
+![GitHub Release](https://img.shields.io/github/v/release/tiagoboeing/graphql-federation-schema-parser)
+[![NPM Version](https://img.shields.io/npm/v/%40tiagoboeing%2Fgql-federation-schema-parser)](https://www.npmjs.com/package/@tiagoboeing/gql-federation-schema-parser)
+
 This project provides a CLI tool to parse GraphQL schemas and generate TypeScript definitions for use in a GraphQL Federation gateway.
 
 Run it on a directory containing GraphQL schema files, and it will output TypeScript definitions to publish to Schema Registry. All schema files will be parsed and merged into a single schema scoped by a provided namespace and service name.
@@ -72,7 +75,30 @@ query {
 
 ## Installation
 
-### MacOS
+You can install the `gql-federation-schema-parser` CLI tool using one of the following methods:
+
+- Using NPM
+- On any platform with the pre-built binary
+
+### Using NPM
+
+To install the CLI tool globally using NPM, run:
+
+```bash
+npm install -g @tiagoboeing/gql-federation-schema-parser
+# or
+pnpm install -g @tiagoboeing/gql-federation-schema-parser
+```
+
+After install, run:
+
+```bash
+gql-federation-schema-parser --help
+```
+
+### Pre-built Binary
+
+#### MacOS
 
 On MacOS a warn will be shown when running the binary for the first time, indicating that it is from an unidentified developer. You can bypass this by following these steps:
 
@@ -83,6 +109,22 @@ On MacOS a warn will be shown when running the binary for the first time, indica
 # Trust the binary and make it executable
 xattr -d com.apple.quarantine gql-federation-schema-parser-macos
 chmod +x gql-federation-schema-parser-macos
+
+# Run the binary
+./gql-federation-schema-parser-macos --help
+```
+
+#### Linux
+
+On Linux, you can download the pre-built binary from the release page and run it directly:
+
+```bash
+# Download the latest release from the release page and unzip it
+...
+chmod +x gql-federation-schema-parser-macos
+
+# Run the binary
+./gql-federation-schema-parser-macos --help
 ```
 
 ## Development

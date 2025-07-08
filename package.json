@@ -15,6 +15,7 @@
     "name": "Tiago Boeing",
     "email": "contato@tiagoboeing.com"
   },
+  "homepage": "https://github.com/tiagoboeing/graphql-federation-schema-parser#readme",
   "repository": "github:tiagoboeing/graphql-federation-schema-parser",
   "engines": {
     "node": ">=22.0.0",
