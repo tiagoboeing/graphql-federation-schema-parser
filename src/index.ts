@@ -39,7 +39,7 @@ program
 program
   .command('parse')
   .description('Parse GraphQL schemas')
-  .option(
+  .requiredOption(
     '-d --directory <folder>',
     'Directory containing GraphQL schema files',
     './schemas'
