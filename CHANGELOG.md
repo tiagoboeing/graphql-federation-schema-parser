@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.2.2
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.1...v1.2.2)
+
+### 🤖 CI
+
+- Move npm publish job from build to release workflow ([82ba866](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/82ba866))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.2.1
 
 [compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.0...v1.2.1)
