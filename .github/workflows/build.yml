@@ -98,14 +98,13 @@ jobs:
 
   publish:
     name: Publish to npm
-    needs: build
+    needs: [changelog]
     runs-on: ubuntu-latest
     if: github.ref_type != 'tag' && inputs.release_type != null
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           token: ${{ github.token }}
 
       - name: Setup Node.js
