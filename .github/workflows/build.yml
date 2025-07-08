@@ -85,7 +85,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "tiagoboeing@users.noreply.github.com"
 
-          npx changelogen@latest --release --push --${{inputs.release_type}} --token ${{ github.token }}
+          npx changelogen@latest --release --bump --push --${{inputs.release_type}} --token ${{ github.token }}
 
       - name: Dispatch gh release workflow
         run: |
