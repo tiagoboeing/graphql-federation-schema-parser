@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v1.2.1
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.0...v1.2.1)
+
+### 📖 Documentation
+
+- Improve installation instructions and add badges ([11c8855](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/11c8855))
+
+### 🤖 CI
+
+- Update publish job to depend on changelog instead of build ([d8c476b](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/d8c476b))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.2.0
 
 [compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.1.1...v1.2.0)
