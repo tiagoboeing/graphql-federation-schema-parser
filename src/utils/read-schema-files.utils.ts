@@ -13,7 +13,10 @@ export function readFiles(files: string[]): string[] {
 
 export const findSchemaFiles = (directory: string): string[] => {
   try {
-    const fullDirectory = path.resolve(path.join(process.cwd(), directory))
+    const fullDirectory = path.isAbsolute(directory)
+      ? directory
+      : path.resolve(process.cwd(), directory)
+
     const files = fs.readdirSync(fullDirectory)
     const schemaFiles = files
       .filter((file) => file.endsWith('.graphql'))
