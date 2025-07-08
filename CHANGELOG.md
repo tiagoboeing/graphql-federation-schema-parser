@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.2.0
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.1.1...v1.2.0)
+
+### 🤖 CI
+
+- Add npm publish workflow and prepare package for publication ([8fbb11e](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/8fbb11e))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.1.1
 
 [compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.1.0...v1.1.1)
