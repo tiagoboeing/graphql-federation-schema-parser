@@ -1,9 +1,13 @@
 {
-  "name": "gql-federation-schema-parser",
+  "name": "@tiagoboeing/gql-federation-schema-parser",
   "version": "1.1.1",
   "description": "CLI tool to parse GraphQL schemas and generate TypeScript definitions for use in a GraphQL Federation gateway.",
   "main": "build/src/index.js",
   "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "gql-federation-schema-parser": "./dist/index.js"
   },
@@ -11,6 +15,7 @@
     "name": "Tiago Boeing",
     "email": "contato@tiagoboeing.com"
   },
+  "repository": "github:tiagoboeing/graphql-federation-schema-parser",
   "engines": {
     "node": ">=22.0.0",
     "bun": ">=1.0.0"
@@ -21,7 +26,8 @@
     "build": "bun build ./src/index.ts --target=node --outdir=./dist --minify",
     "build:executable": "bun build ./src/index.ts --compile --outfile=./dist/gql-federation-schema-parser",
     "postbuild:executable": "chmod +x ./dist/gql-federation-schema-parser",
-    "execute": "bun src/index.ts"
+    "execute": "bun src/index.ts",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "graphql",
