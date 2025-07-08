@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.1.1
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.1.0...v1.1.1)
+
+### 🩹 Fixes
+
+- Add missing --bump flag to changelogen release command ([4d1c265](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/4d1c265))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.1.0
 
 
