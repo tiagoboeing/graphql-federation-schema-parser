@@ -183,16 +183,17 @@ To develop this project, you will need Node.js and npm installed. Follow these s
 
 ### Testing CLI
 
-To test the CLI, you can use `ts-node-dev` to run the TypeScript code directly:
+To test the CLI, you can use `tsx` script on `package.json` to run the TypeScript code directly and debug in your IDE:
 
 ```bash
-npx ts-node-dev src/index.ts [args]
-
-# Example:
-npx ts-node-dev src/index.ts --help
+pnpm start:dev-ts src/index.ts [args]
 ```
 
-or you can use `bun` to run the TypeScript code:
+> [!NOTE]
+>
+> On VSCode, run from a JavaScript Debug Terminal to enable debugging features like breakpoints and watch variables.
+
+or you can use `bun` to run the TypeScript code (Bun debugger is buggy, so use it only if you don't need to debug):
 
 ```bash
 pnpm start:dev 

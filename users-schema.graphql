@@ -1,0 +1,184 @@
+directive @oneOf on INPUT_OBJECT
+
+scalar DateTime
+scalar JSONObject
+scalar JSON
+scalar BigInt
+scalar Boolean
+scalar String
+scalar Int
+
+enum PlatformUsers__SortDirection {
+  ASC
+  DESC
+}
+
+interface Timestamps {
+  updatedAt: DateTime!
+  createdAt: DateTime!
+}
+
+input PlatformUsers__CreateContractorInput {
+  tradeName: String!
+  domain: String!
+  legalName: String
+  cnpj: String
+  resources: [PlatformUsers__ContractorUserInput]
+  email: String
+  phone: String
+  address: PlatformUsers__CreateAddressInput
+}
+
+input PlatformUsers__CreateAddressInput {
+  addressLine: String!
+  number: Int
+  addressLine2: String!
+  district: String!
+  city: String!
+  zipCode: String!
+  state: String!
+}
+
+input PlatformUsers__UpdateContractorInput {
+  tradeName: String
+  domain: String
+  legalName: String
+  cnpj: String
+  resources: [PlatformUsers__ContractorUserInput]
+  email: String
+  phone: String
+  address: PlatformUsers__UpdateAddressInput
+}
+
+input PlatformUsers__UpdateAddressInput {
+  addressLine: String
+  number: Int
+  addressLine2: String
+  district: String
+  city: String
+  zipCode: String
+  state: String
+}
+
+input PlatformUsers__ContractorUserInput {
+  id: String
+}
+
+input PlatformUsers__SortInput {
+  orderBy: String
+  direction: PlatformUsers__SortDirection
+}
+
+type PlatformUsers__BooleanOperations {
+  success: Boolean!
+  message: String
+}
+
+type PlatformUsers__Contractor {
+  id: String
+  domain: String
+  tradeName: String
+  legalName: String
+  cnpj: String
+  resources: [PlatformUsers__User]
+  email: String
+  phone: String
+  address: PlatformUsers__Address
+}
+
+type PlatformUsers__Address {
+  addressLine: String!
+  number: Int
+  addressLine2: String!
+  district: String!
+  city: String!
+  zipCode: String!
+  state: String!
+}
+
+type PlatformUsers__Employee {
+  id: String
+  user: PlatformUsers__User
+  role: String
+  vp: String
+  updatedAt: DateTime
+  createdAt: DateTime
+  contractor: PlatformUsers__Contractor
+  dateOfBirth: DateTime
+  corporatePhone: String
+}
+
+type PlatformUsers__User {
+  id: String
+  name: String
+  photoUrl: String
+  email: String
+  enabled: Boolean
+  blocked: Boolean
+  updatedAt: String
+  createdAt: String
+}
+
+type PlatformUsersQueries {
+  contractors(skip: Int, take: Int): [PlatformUsers__Contractor!]
+  searchContractor(q: String!, skip: Int, take: Int): [PlatformUsers__Contractor!]
+  contractorById(id: String!): PlatformUsers__Contractor
+  employees(
+    enabled: Boolean
+    skip: Int
+    take: Int
+    sort: [PlatformUsers__SortInput]
+  ): [PlatformUsers__Employee!]
+  employeesByName(
+    name: String!
+    enabled: Boolean
+    skip: Int
+    take: Int
+    sort: [PlatformUsers__SortInput]
+  ): [PlatformUsers__Employee!]
+  employeeById(id: String!): PlatformUsers__Employee
+  users(
+    enabled: Boolean
+    skip: Int
+    take: Int
+    sort: [PlatformUsers__SortInput]
+  ): [PlatformUsers__User!]
+  usersByName(
+    name: String!
+    enabled: Boolean
+    skip: Int
+    take: Int
+    sort: [PlatformUsers__SortInput]
+  ): [PlatformUsers__User!]
+  userByIdp(identityProviderUserId: String!): PlatformUsers__User
+  userById(id: String!): PlatformUsers__User
+}
+
+type PlatformUsersMutations {
+  createContractor(
+    input: PlatformUsers__CreateContractorInput
+  ): PlatformUsers__Contractor!
+  updateContractor(
+    id: String!
+    input: PlatformUsers__UpdateContractorInput!
+  ): PlatformUsers__Contractor!
+  removeContractor(id: String!): PlatformUsers__Contractor
+  blockUser(id: String!): PlatformUsers__User
+  unblockUser(id: String!): PlatformUsers__User
+}
+
+type PlatformMutations {
+  users: PlatformUsersMutations!
+}
+
+type PlatformQueries {
+  users: PlatformUsersQueries!
+}
+
+type Mutation {
+  platform: PlatformMutations!
+}
+
+type Query {
+  platform: PlatformQueries!
+}

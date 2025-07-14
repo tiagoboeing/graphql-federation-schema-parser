@@ -23,6 +23,7 @@
   },
   "scripts": {
     "start:dev": "bun --watch src/index.ts",
+    "start:dev-ts": "tsx --watch src/index.ts",
     "start:debug": "bun --inspect --watch src/index.ts",
     "prebuild": "rm -rf ./dist",
     "build": "bun build ./src/index.ts --target=node --outdir=./dist --minify",
@@ -44,6 +45,7 @@
     "@types/figlet": "^1.7.0",
     "@types/node": "^24.0.10",
     "bun": "^1.2.18",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
   "dependencies": {
