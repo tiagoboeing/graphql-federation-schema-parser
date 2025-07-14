@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v1.3.0
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.2...v1.3.0)
+
+### 🚀 Enhancements
+
+- Add recursive schema parsing and improve documentation ([8fef8e1](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/8fef8e1))
+- **schema:** Support for directives, scalars, enums, interfaces, unions, and input types ([#2](https://github.com/tiagoboeing/graphql-federation-schema-parser/pull/2))
+
+### 💅 Refactors
+
+- **logger:** Simplify color handling in appLogger function ([0c8df7d](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/0c8df7d))
+- Namespaced all types, enums and inputs using pre-defined prefix ([#3](https://github.com/tiagoboeing/graphql-federation-schema-parser/pull/3))
+
+### 📖 Documentation
+
+- **README:** Update example with realistic service and namespace names ([b168ae8](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/b168ae8))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.2.2
 
 [compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.1...v1.2.2)
