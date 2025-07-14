@@ -115,6 +115,14 @@ query {
 }
 ```
 
+### Where to use this tool
+
+Use this CLI at the service level to prepare schema before publish it to the Schema Registry. It will generate a final GraphQL Schema file with the merged definitions. The gateway need to be prepared to translate the namespace and service name into the correct GraphQL operations at the service level.
+
+> [!NOTE]
+>
+> Example: on Yoga/Hive gateway, you can create a custom plugin to handle `onFetch` hook, capture the namespace and service name, and translate the query to the correct service operation overriding the `setFetchFn()` method.
+
 ## Installation
 
 You can install the `gql-federation-schema-parser` CLI tool using one of the following methods:
