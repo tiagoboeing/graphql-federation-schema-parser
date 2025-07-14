@@ -1,6 +1,17 @@
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { ConsolaInstance } from 'consola'
-import { buildSchema, print, printSchema } from 'graphql'
+import {
+  buildSchema,
+  print,
+  printSchema,
+  GraphQLScalarType,
+  GraphQLDirective,
+  GraphQLEnumType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLInputObjectType,
+  GraphQLObjectType
+} from 'graphql'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { findSchemaFiles, readFiles } from '../../utils/read-schema-files.utils'
@@ -66,28 +77,102 @@ export default async function execute(
     )
     .map((typeName) => typeMap[typeName])
 
+  // Get directives
+  const directives = schema
+    .getDirectives()
+    .filter(
+      (directive) =>
+        !['include', 'skip', 'deprecated', 'specifiedBy'].includes(directive.name)
+    )
+
   // Function to dynamically generate field definitions
   function generateFieldDefinition(field) {
+    let args = ''
     if (field.args && field.args.length > 0) {
-      const args = field.args.map((arg) => `${arg.name}: ${arg.type}`).join(', ')
-      return `${field.name}(${args}): ${field.type}`
+      args = `(${field.args
+        .map((arg) => {
+          const defaultValue =
+            arg.defaultValue !== undefined
+              ? ` = ${JSON.stringify(arg.defaultValue)}`
+              : ''
+          return `${arg.name}: ${arg.type}${defaultValue}`
+        })
+        .join(', ')})`
     }
 
-    return `${field.name}: ${field.type}`
+    // Handle directives on fields if needed
+    const directives = field.astNode?.directives?.length
+      ? ' ' + field.astNode.directives.map((d) => print(d)).join(' ')
+      : ''
+
+    return `${field.name}${args}: ${field.type}${directives}`
   }
 
   // Function to generate type definitions
   function generateTypeDefinition(type) {
-    if ('getFields' in type) {
+    if (type instanceof GraphQLScalarType) {
+      return `scalar ${type.name}`
+    } else if (type instanceof GraphQLEnumType) {
+      const values = type.getValues()
+      return `enum ${type.name} {
+  ${values
+    .map((val) => {
+      const directives = val.astNode?.directives?.length
+        ? ' ' + val.astNode.directives.map((d) => print(d)).join(' ')
+        : ''
+      return `${val.name}${directives}`
+    })
+    .join('\n  ')}
+}`
+    } else if (type instanceof GraphQLInterfaceType) {
+      const fields = type.getFields()
+      const fieldDefinitions = Object.values(fields).map(generateFieldDefinition)
+      return `interface ${type.name} {
+  ${fieldDefinitions.join('\n  ')}
+}`
+    } else if (type instanceof GraphQLUnionType) {
+      const types = type.getTypes()
+      return `union ${type.name} = ${types.map((t) => t.name).join(' | ')}`
+    } else if (type instanceof GraphQLInputObjectType) {
+      const fields = type.getFields()
+      const fieldDefinitions = Object.values(fields).map((field) => {
+        const defaultValue =
+          field.defaultValue !== undefined
+            ? ` = ${JSON.stringify(field.defaultValue)}`
+            : ''
+        return `${field.name}: ${field.type}${defaultValue}`
+      })
+      return `input ${type.name} {
+  ${fieldDefinitions.join('\n  ')}
+}`
+    } else if (type instanceof GraphQLObjectType) {
       const fields = type.getFields()
       const fieldDefinitions = Object.values(fields).map(generateFieldDefinition)
       if (fieldDefinitions.length === 0) return '' // Skip empty types
-      return `type ${type.name} {
+
+      // Handle directives on types if needed
+      const typeDirectives = type.astNode?.directives?.length
+        ? ' ' + type.astNode.directives.map((d) => print(d)).join(' ')
+        : ''
+
+      return `type ${type.name}${typeDirectives} {
   ${fieldDefinitions.join('\n  ')}
 }`
     }
     return ''
   }
+
+  // Generate directive definitions
+  const directiveDefinitions = directives.map((directive) => {
+    const args =
+      directive.args.length > 0
+        ? `(${directive.args.map((arg) => `${arg.name}: ${arg.type}`).join(', ')})`
+        : ''
+
+    const locations = directive.locations.join(' | ')
+
+    return `directive @${directive.name}${args} on ${locations}`
+  })
 
   // Generate definitions
   const queryDefinitions = Object.values(queries).map(generateFieldDefinition)
@@ -95,22 +180,54 @@ export default async function execute(
   const subscriptionDefinitions = Object.values(subscriptions).map(
     generateFieldDefinition
   )
-  const otherTypeDefinitions = otherTypes
-    .map(generateTypeDefinition)
-    .filter((definition) => definition !== '') // Exclude empty types
 
+  // Group types by category for better organization
+  const scalarTypes = otherTypes.filter((type) => type instanceof GraphQLScalarType)
+  const enumTypes = otherTypes.filter((type) => type instanceof GraphQLEnumType)
+  const interfaceTypes = otherTypes.filter(
+    (type) => type instanceof GraphQLInterfaceType
+  )
+  const unionTypes = otherTypes.filter((type) => type instanceof GraphQLUnionType)
+  const inputTypes = otherTypes.filter(
+    (type) => type instanceof GraphQLInputObjectType
+  )
+  const objectTypes = otherTypes.filter((type) => type instanceof GraphQLObjectType)
+
+  const scalarDefinitions = scalarTypes.map(generateTypeDefinition).filter(Boolean)
+  const enumDefinitions = enumTypes.map(generateTypeDefinition).filter(Boolean)
+  const interfaceDefinitions = interfaceTypes
+    .map(generateTypeDefinition)
+    .filter(Boolean)
+  const unionDefinitions = unionTypes.map(generateTypeDefinition).filter(Boolean)
+  const inputDefinitions = inputTypes.map(generateTypeDefinition).filter(Boolean)
+  const objectDefinitions = objectTypes.map(generateTypeDefinition).filter(Boolean)
   logger.box({
     title: 'Schema parsing results',
     message: `Queries: ${queryDefinitions.length}
 Mutations: ${mutationDefinitions.length}
 Subscriptions: ${subscriptionDefinitions.length}
-Other Types: ${otherTypeDefinitions.length}
-`
+Scalars: ${scalarDefinitions.length}
+Enums: ${enumDefinitions.length}
+Interfaces: ${interfaceDefinitions.length}
+Unions: ${unionDefinitions.length}
+Input Types: ${inputDefinitions.length}
+Object Types: ${objectDefinitions.length}
+Directives: ${directiveDefinitions.length}`
   })
 
   // Create new schema file with the manipulated schema
   const generatedSchema = `
-${otherTypeDefinitions.join('\n\n')}
+${directiveDefinitions.length > 0 ? directiveDefinitions.join('\n\n') : ''}
+
+${scalarDefinitions.length > 0 ? scalarDefinitions.join('\n') : ''}
+
+${enumDefinitions.length > 0 ? enumDefinitions.join('\n\n') : ''}
+
+${interfaceDefinitions.length > 0 ? interfaceDefinitions.join('\n\n') : ''}
+${unionDefinitions.length > 0 ? unionDefinitions.join('\n\n') : ''}
+${inputDefinitions.length > 0 ? inputDefinitions.join('\n\n') : ''}
+
+${objectDefinitions.length > 0 ? objectDefinitions.join('\n\n') : ''}
 
 type ${args.serviceName}Queries {
   ${queryDefinitions.join('\n  ')}
@@ -169,28 +286,41 @@ ${
 }
 `
 
-  const validatedSchema = buildSchema(generatedSchema)
-  logger.success('Schema parsing completed successfully!')
+  try {
+    const validatedSchema = buildSchema(generatedSchema)
+    logger.success('Schema parsing completed successfully!')
 
-  // Print
-  const printedSchema = printSchema(validatedSchema)
-  logger.debug('Generated schema content:\n', printedSchema)
+    // Print
+    const printedSchema = printSchema(validatedSchema)
+    logger.debug('Generated schema content:\n', printedSchema)
 
-  if (args.writeToFile) {
-    logger.info('Writing generated schema to file...')
-    const outputPath = path.join(process.cwd(), finalSchemaFile)
+    if (args.writeToFile) {
+      logger.info('Writing generated schema to file...')
+      const outputPath = path.join(process.cwd(), finalSchemaFile)
 
-    logger.debug('Output path:', outputPath)
+      logger.debug('Output path:', outputPath)
 
-    writeFileSync(outputPath, generatedSchema, 'utf8')
-    logger.ready(`Schema written to ${outputPath}`)
+      writeFileSync(outputPath, generatedSchema, 'utf8')
+      logger.ready(`Schema written to ${outputPath}`)
+    }
+
+    logger.info(
+      'Thank you for using the GQL Federation Schema Parser CLI!\n',
+      ' Use this schema to publish to your GraphQL schema registry.\n',
+      ' -----------------------------------------------------------\n',
+      ' For more information, visit: https://github.com/tiagoboeing/graphql-federation-schema-parser\n'
+    )
+    logger.ready('🚀 Schema parsing completed successfully!')
+  } catch (error) {
+    logger.error('Error validating the generated schema:', error)
+
+    // Write the schema anyway so it can be debugged
+    if (args.writeToFile) {
+      const outputPath = path.join(process.cwd(), finalSchemaFile)
+      writeFileSync(outputPath, generatedSchema, 'utf8')
+      logger.info(`Schema written to ${outputPath} for debugging purposes`)
+    }
+
+    process.exit(1)
   }
-
-  logger.info(
-    'Thank you for using the GQL Federation Schema Parser CLI!\n',
-    ' Use this schema to publish to your GraphQL schema registry.\n',
-    ' -----------------------------------------------------------\n',
-    ' For more information, visit: https://github.com/tiagoboeing/graphql-federation-schema-parser\n'
-  )
-  logger.ready('🚀 Schema parsing completed successfully!')
 }
