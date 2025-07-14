@@ -23,6 +23,7 @@
   },
   "scripts": {
     "start:dev": "bun --watch src/index.ts",
+    "start:debug": "bun --inspect --watch src/index.ts",
     "prebuild": "rm -rf ./dist",
     "build": "bun build ./src/index.ts --target=node --outdir=./dist --minify",
     "build:executable": "bun build ./src/index.ts --compile --outfile=./dist/gql-federation-schema-parser",

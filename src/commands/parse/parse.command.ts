@@ -17,7 +17,7 @@ export default async function execute(
 
   // Read all schema files from the specified directory
   const schemaDirectory = args.directory
-  const schemaFiles = findSchemaFiles(schemaDirectory)
+  const schemaFiles = findSchemaFiles(schemaDirectory, logger)
   logger.debug('Schema files found:', schemaFiles)
 
   const schemaContents = readFiles(schemaFiles)
