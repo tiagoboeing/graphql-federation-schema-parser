@@ -2,20 +2,23 @@ import { mergeTypeDefs } from '@graphql-tools/merge'
 import { ConsolaInstance } from 'consola'
 import {
   buildSchema,
-  print,
-  printSchema,
-  GraphQLScalarType,
-  GraphQLDirective,
   GraphQLEnumType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
   GraphQLInputObjectType,
-  GraphQLObjectType
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+  print,
+  printSchema
 } from 'graphql'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { findSchemaFiles, readFiles } from '../../utils/read-schema-files.utils'
 import { ParseCommandOptions } from './parse.model'
+import {
+  generateFieldDefinition,
+  generateTypeDefinition
+} from '../../utils/graphql-parse.utils'
 
 export default async function execute(
   args: ParseCommandOptions,
@@ -23,6 +26,14 @@ export default async function execute(
 ) {
   logger.start('Starting schema parsing...')
   logger.debug('Args =', args)
+
+  const serviceNameCapitalized = `${
+    args.serviceName.charAt(0).toUpperCase() + args.serviceName.slice(1)
+  }`
+  const namespaceCapitalized = `${
+    args.namespace.charAt(0).toUpperCase() + args.namespace.slice(1)
+  }`
+  const prefix = `${namespaceCapitalized}${serviceNameCapitalized}__`
 
   const finalSchemaFile = args.outputFile ?? `${args.serviceName}-schema.graphql`
 
@@ -85,83 +96,6 @@ export default async function execute(
         !['include', 'skip', 'deprecated', 'specifiedBy'].includes(directive.name)
     )
 
-  // Function to dynamically generate field definitions
-  function generateFieldDefinition(field) {
-    let args = ''
-    if (field.args && field.args.length > 0) {
-      args = `(${field.args
-        .map((arg) => {
-          const defaultValue =
-            arg.defaultValue !== undefined
-              ? ` = ${JSON.stringify(arg.defaultValue)}`
-              : ''
-          return `${arg.name}: ${arg.type}${defaultValue}`
-        })
-        .join(', ')})`
-    }
-
-    // Handle directives on fields if needed
-    const directives = field.astNode?.directives?.length
-      ? ' ' + field.astNode.directives.map((d) => print(d)).join(' ')
-      : ''
-
-    return `${field.name}${args}: ${field.type}${directives}`
-  }
-
-  // Function to generate type definitions
-  function generateTypeDefinition(type) {
-    if (type instanceof GraphQLScalarType) {
-      return `scalar ${type.name}`
-    } else if (type instanceof GraphQLEnumType) {
-      const values = type.getValues()
-      return `enum ${type.name} {
-  ${values
-    .map((val) => {
-      const directives = val.astNode?.directives?.length
-        ? ' ' + val.astNode.directives.map((d) => print(d)).join(' ')
-        : ''
-      return `${val.name}${directives}`
-    })
-    .join('\n  ')}
-}`
-    } else if (type instanceof GraphQLInterfaceType) {
-      const fields = type.getFields()
-      const fieldDefinitions = Object.values(fields).map(generateFieldDefinition)
-      return `interface ${type.name} {
-  ${fieldDefinitions.join('\n  ')}
-}`
-    } else if (type instanceof GraphQLUnionType) {
-      const types = type.getTypes()
-      return `union ${type.name} = ${types.map((t) => t.name).join(' | ')}`
-    } else if (type instanceof GraphQLInputObjectType) {
-      const fields = type.getFields()
-      const fieldDefinitions = Object.values(fields).map((field) => {
-        const defaultValue =
-          field.defaultValue !== undefined
-            ? ` = ${JSON.stringify(field.defaultValue)}`
-            : ''
-        return `${field.name}: ${field.type}${defaultValue}`
-      })
-      return `input ${type.name} {
-  ${fieldDefinitions.join('\n  ')}
-}`
-    } else if (type instanceof GraphQLObjectType) {
-      const fields = type.getFields()
-      const fieldDefinitions = Object.values(fields).map(generateFieldDefinition)
-      if (fieldDefinitions.length === 0) return '' // Skip empty types
-
-      // Handle directives on types if needed
-      const typeDirectives = type.astNode?.directives?.length
-        ? ' ' + type.astNode.directives.map((d) => print(d)).join(' ')
-        : ''
-
-      return `type ${type.name}${typeDirectives} {
-  ${fieldDefinitions.join('\n  ')}
-}`
-    }
-    return ''
-  }
-
   // Generate directive definitions
   const directiveDefinitions = directives.map((directive) => {
     const args =
@@ -170,15 +104,18 @@ export default async function execute(
         : ''
 
     const locations = directive.locations.join(' | ')
-
     return `directive @${directive.name}${args} on ${locations}`
   })
 
   // Generate definitions
-  const queryDefinitions = Object.values(queries).map(generateFieldDefinition)
-  const mutationDefinitions = Object.values(mutations).map(generateFieldDefinition)
-  const subscriptionDefinitions = Object.values(subscriptions).map(
-    generateFieldDefinition
+  const queryDefinitions = Object.values(queries).map((field) =>
+    generateFieldDefinition(field, prefix)
+  )
+  const mutationDefinitions = Object.values(mutations).map((field) =>
+    generateFieldDefinition(field, prefix)
+  )
+  const subscriptionDefinitions = Object.values(subscriptions).map((field) =>
+    generateFieldDefinition(field, prefix)
   )
 
   // Group types by category for better organization
@@ -193,14 +130,27 @@ export default async function execute(
   )
   const objectTypes = otherTypes.filter((type) => type instanceof GraphQLObjectType)
 
-  const scalarDefinitions = scalarTypes.map(generateTypeDefinition).filter(Boolean)
-  const enumDefinitions = enumTypes.map(generateTypeDefinition).filter(Boolean)
-  const interfaceDefinitions = interfaceTypes
-    .map(generateTypeDefinition)
+  const scalarDefinitions = scalarTypes
+    .map((type) => generateTypeDefinition(type, prefix))
     .filter(Boolean)
-  const unionDefinitions = unionTypes.map(generateTypeDefinition).filter(Boolean)
-  const inputDefinitions = inputTypes.map(generateTypeDefinition).filter(Boolean)
-  const objectDefinitions = objectTypes.map(generateTypeDefinition).filter(Boolean)
+  const enumDefinitions = enumTypes
+    .map((type) => generateTypeDefinition(type, prefix))
+    .filter(Boolean)
+
+  const interfaceDefinitions = interfaceTypes
+    .map((type) => generateTypeDefinition(type, prefix))
+    .filter(Boolean)
+
+  const unionDefinitions = unionTypes
+    .map((type) => generateTypeDefinition(type, prefix))
+    .filter(Boolean)
+  const inputDefinitions = inputTypes
+    .map((type) => generateTypeDefinition(type, prefix))
+    .filter(Boolean)
+  const objectDefinitions = objectTypes
+    .map((type) => generateTypeDefinition(type, prefix))
+    .filter(Boolean)
+
   logger.box({
     title: 'Schema parsing results',
     message: `Queries: ${queryDefinitions.length}
@@ -229,58 +179,58 @@ ${inputDefinitions.length > 0 ? inputDefinitions.join('\n\n') : ''}
 
 ${objectDefinitions.length > 0 ? objectDefinitions.join('\n\n') : ''}
 
-type ${args.serviceName}Queries {
+type ${namespaceCapitalized}${serviceNameCapitalized}Queries {
   ${queryDefinitions.join('\n  ')}
 }
 
 ${
   mutationDefinitions.length > 0
-    ? `type ${args.serviceName}Mutations {
+    ? `type ${namespaceCapitalized}${serviceNameCapitalized}Mutations {
   ${mutationDefinitions.join('\n  ')}
 }`
     : ''
 }
 ${
   subscriptionDefinitions.length > 0
-    ? `type ${args.serviceName}Subscriptions {
+    ? `type ${namespaceCapitalized}Subscriptions {
   ${subscriptionDefinitions.join('\n  ')}
 }`
     : ''
 }
 ${
   mutationDefinitions.length > 0
-    ? `type NamespaceMutations {
-  ${args.serviceName}: ${args.serviceName}Mutations!
+    ? `type ${namespaceCapitalized}Mutations {
+  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Mutations!
 }`
     : ''
 }
 
-type NamespaceQueries {
-  ${args.serviceName}: ${args.serviceName}Queries!
+type ${namespaceCapitalized}Queries {
+  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Queries!
 }
 ${
   subscriptionDefinitions.length > 0
-    ? `type NamespaceSubscriptions {
-  ${args.serviceName}: ${args.serviceName}Subscriptions!
+    ? `type ${namespaceCapitalized}Subscriptions {
+  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Subscriptions!
 }`
     : ''
 }
 ${
   mutationDefinitions.length > 0
     ? `type Mutation {
-  ${args.namespace}: NamespaceMutations!
+  ${args.namespace}: ${namespaceCapitalized}Mutations!
 }`
     : ''
 }
 
 type Query {
-  ${args.namespace}: NamespaceQueries!
+  ${args.namespace}: ${namespaceCapitalized}Queries!
 }
 
 ${
   subscriptionDefinitions.length > 0
     ? `type Subscription {
-  ${args.namespace}: NamespaceSubscriptions!
+  ${args.namespace}: ${namespaceCapitalized}Subscriptions!
 }`
     : ''
 }
