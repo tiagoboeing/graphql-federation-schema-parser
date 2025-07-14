@@ -56,49 +56,56 @@ gql-federation-schema-parser parse -d ./schemas -s myService -n myScope --debug
 
 With the following [schema files](./schemas) in a directory and these settings:
 
-- `--service-name`: `myService`
-- `--namespace`: `myScope`
+- `--service-name`: `users`
+- `--namespace`: `platform`
 
 The resulting GraphQL schema will be:
 
 ```graphql
 # Graphql root definitions
-type Query {
-  myScope: NamespaceQueries!
+directive @oneOf on INPUT_OBJECT
+
+scalar ID
+scalar String
+scalar Boolean
+
+type PlatformUsers__Post {
+  id: ID!
+  content: String
+  authorId: ID!
+}
+
+type PlatformUsers__User {
+  id: ID!
+  name: String
+  email: String
+}
+
+type PlatformUsersQueries {
+  posts: [PlatformUsers__Post!]!
+  post(id: ID!): PlatformUsers__Post
+  users: [PlatformUsers__User!]!
+  getSubschemaData: String
+}
+
+type PlatformUsersMutations {
+  createPost: PlatformUsers__Post!
+}
+
+type PlatformMutations {
+  users: PlatformUsersMutations!
+}
+
+type PlatformQueries {
+  users: PlatformUsersQueries!
 }
 
 type Mutation {
-  myScope: NamespaceMutations!
+  platform: PlatformMutations!
 }
 
-type Subscription {
-  myScope: NamespaceSubscriptions!
-}
-
-# Namespace operations
-type NamespaceMutations {
-  myService: myServiceMutations!
-}
-
-type NamespaceQueries {
-  myService: myServiceQueries!
-}
-
-type NamespaceSubscriptions {
-  myService: myServiceSubscriptions!
-}
-
-# Service definitions
-type myServiceQueries {
-  ...
-}
-
-type myServiceMutations {
-  ...
-}
-
-type ScopeSubscriptions {
-  ...
+type Query {
+  platform: PlatformQueries!
 }
 ```
 
@@ -106,14 +113,16 @@ In gateway you can query the schema like this:
 
 ```graphql
 query {
-  myNamespace {
-    myService {
+  platform {
+    users {
       # Query, mutate or subscribe to your service operations
       ...
     }
   }
 }
 ```
+
+All GraphQL types will be prefixed with the namespace and service name, allowing you to have multiple services under the same namespace without conflicts. Eg.: `PlatformUsers__User`, `PlatformUsers__Post`, etc.
 
 ### Where to use this tool
 
