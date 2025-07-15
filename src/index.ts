@@ -1,9 +1,10 @@
 import { Command } from 'commander'
 import figlet from 'figlet'
+import bigFont from 'figlet/importable-fonts/Big'
+import _ from 'lodash'
 import { version as packageVersion } from '../package.json'
 import parseCommand from './commands/parse/parse.command'
 import { appLogger, ConsolaLogLevel } from './utils/logger.utils'
-import bigFont from 'figlet/importable-fonts/Big'
 
 figlet.parseFont('Big', bigFont)
 
