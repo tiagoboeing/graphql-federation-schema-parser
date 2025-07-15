@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v1.4.0
+
+[compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.3.0...v1.4.0)
+
+### 🚀 Enhancements
+
+- Integrate lodash for string case transformations ([#4](https://github.com/tiagoboeing/graphql-federation-schema-parser/pull/4))
+
+### 📖 Documentation
+
+- Add comprehensive documentation and improve README ([4cd9738](https://github.com/tiagoboeing/graphql-federation-schema-parser/commit/4cd9738))
+
+### ❤️ Contributors
+
+- Tiago Boeing ([@tiagoboeing](https://github.com/tiagoboeing))
+
 ## v1.3.0
 
 [compare changes](https://github.com/tiagoboeing/graphql-federation-schema-parser/compare/v1.2.2...v1.3.0)
