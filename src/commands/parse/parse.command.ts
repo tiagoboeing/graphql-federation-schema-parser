@@ -20,6 +20,13 @@ import {
   generateTypeDefinition
 } from '../../utils/graphql-parse.utils'
 
+/**
+ * Main execution function for the parse command.
+ *
+ * @param args - Configuration options for the parse command
+ * @param logger - Consola logger instance for output and debugging
+ * @returns Promise that resolves when parsing is complete
+ */
 export default async function execute(
   args: ParseCommandOptions,
   logger: ConsolaInstance

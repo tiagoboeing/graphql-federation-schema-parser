@@ -1,5 +1,12 @@
 import { createConsola } from 'consola'
 
+/**
+ * Enumeration of log levels for the Consola logger.
+ *
+ * These levels control the verbosity of logging output, from silent to verbose.
+ * Lower numbers represent more critical messages, while higher numbers include
+ * more detailed information.
+ */
 export enum ConsolaLogLevel {
   FatalAndError = 0,
   Warning = 1,

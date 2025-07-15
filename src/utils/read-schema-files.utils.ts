@@ -3,6 +3,23 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+/**
+ * Reads multiple schema files and returns their contents as an array of strings.
+ *
+ * This function synchronously reads all provided file paths and returns their
+ * contents as UTF-8 encoded strings. If any error occurs during reading,
+ * it logs the error and returns an empty array.
+ *
+ * @param files - Array of absolute file paths to read
+ * @returns Array of file contents as strings, or empty array if error occurs
+ *
+ * @example
+ * ```typescript
+ * const files = ['/path/to/schema1.graphql', '/path/to/schema2.graphql'];
+ * const contents = readFiles(files);
+ * // Returns: ['type User { id: ID! }', 'type Post { id: ID! }']
+ * ```
+ */
 export function readFiles(files: string[]): string[] {
   try {
     return files.map((file) => fs.readFileSync(file, 'utf-8'))
@@ -12,6 +29,29 @@ export function readFiles(files: string[]): string[] {
   }
 }
 
+/**
+ * Recursively finds all GraphQL schema files in a directory or validates a single file.
+ *
+ * This function searches for .graphql files in the specified directory and its
+ * subdirectories. It can handle both file paths and directory paths:
+ * - If given a file path, it validates the file has a .graphql extension
+ * - If given a directory path, it recursively searches for all .graphql files
+ *
+ * @param directory - The directory path to search or file path to validate
+ * @param logger - Consola logger instance for debug and error messages
+ * @returns Array of absolute paths to found .graphql files
+ *
+ * @example
+ * ```typescript
+ * // Search in a directory
+ * const files = findSchemaFiles('./schemas', logger);
+ * // Returns: ['/absolute/path/to/schemas/users.graphql', '/absolute/path/to/schemas/posts.graphql']
+ *
+ * // Validate a single file
+ * const files = findSchemaFiles('./users.graphql', logger);
+ * // Returns: ['/absolute/path/to/users.graphql']
+ * ```
+ */
 export const findSchemaFiles = (
   directory: string,
   logger: ConsolaInstance
