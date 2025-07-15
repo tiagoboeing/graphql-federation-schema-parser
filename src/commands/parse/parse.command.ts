@@ -19,6 +19,7 @@ import {
   generateFieldDefinition,
   generateTypeDefinition
 } from '../../utils/graphql-parse.utils'
+import _ from 'lodash'
 
 /**
  * Main execution function for the parse command.
@@ -34,15 +35,12 @@ export default async function execute(
   logger.start('Starting schema parsing...')
   logger.debug('Args =', args)
 
-  const serviceNameCapitalized = `${
-    args.serviceName.charAt(0).toUpperCase() + args.serviceName.slice(1)
-  }`
-  const namespaceCapitalized = `${
-    args.namespace.charAt(0).toUpperCase() + args.namespace.slice(1)
-  }`
+  const serviceNameCapitalized = _.upperFirst(_.camelCase(args.serviceName))
+  const namespaceCapitalized = _.upperFirst(_.camelCase(args.namespace))
+
   const prefix = `${namespaceCapitalized}${serviceNameCapitalized}__`
 
-  const finalSchemaFile = args.outputFile ?? `${args.serviceName}-schema.graphql`
+  const finalSchemaFile = args.outputFile ?? `${_.kebabCase(prefix)}-schema.graphql`
 
   // Read all schema files from the specified directory
   const schemaDirectory = args.directory
@@ -207,37 +205,43 @@ ${
 ${
   mutationDefinitions.length > 0
     ? `type ${namespaceCapitalized}Mutations {
-  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Mutations!
+  ${_.camelCase(
+    args.serviceName
+  )}: ${namespaceCapitalized}${serviceNameCapitalized}Mutations!
 }`
     : ''
 }
 
 type ${namespaceCapitalized}Queries {
-  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Queries!
+  ${_.camelCase(
+    args.serviceName
+  )}: ${namespaceCapitalized}${serviceNameCapitalized}Queries!
 }
 ${
   subscriptionDefinitions.length > 0
     ? `type ${namespaceCapitalized}Subscriptions {
-  ${args.serviceName}: ${namespaceCapitalized}${serviceNameCapitalized}Subscriptions!
+  ${_.camelCase(
+    args.serviceName
+  )}: ${namespaceCapitalized}${serviceNameCapitalized}Subscriptions!
 }`
     : ''
 }
 ${
   mutationDefinitions.length > 0
     ? `type Mutation {
-  ${args.namespace}: ${namespaceCapitalized}Mutations!
+  ${_.camelCase(args.namespace)}: ${namespaceCapitalized}Mutations!
 }`
     : ''
 }
 
 type Query {
-  ${args.namespace}: ${namespaceCapitalized}Queries!
+  ${_.camelCase(args.namespace)}: ${namespaceCapitalized}Queries!
 }
 
 ${
   subscriptionDefinitions.length > 0
     ? `type Subscription {
-  ${args.namespace}: ${namespaceCapitalized}Subscriptions!
+  ${_.camelCase(args.namespace)}: ${namespaceCapitalized}Subscriptions!
 }`
     : ''
 }
